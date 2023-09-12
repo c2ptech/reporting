@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .box1 {
+            width: 70%;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: rgb(204, 218, 218);
+        }
+
+        .box1 h1 {
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .flex {
+            display: flex;
+            margin-top: 20px;
+            gap: 30px;
+            justify-content: right;
+        }
+
+        .table {
+            width: 100%;
+            margin: auto;
+            margin-top: 50px;
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box1">
+        <h1>reporting</h1>
+        <div class="flex">
+            <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
+                <i class="fa fa-calendar"></i>&nbsp;
+                <span></span> <i class="fa fa-caret-down"></i>
+            </div>
+            <select id="filter-option">
+                <option value="all">All</option>
+                <option value="sales-team">Sales Team</option>
+                <option value="sales-person">Sales Person</option>
+            </select>
+        </div>
+
+        <table class="table" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Total Calls</th>
+                    <th>Connected Calls</th>
+                    <th>Meeting Arrange</th>
+                    <th>Meeting Date</th>
+                </tr>
+            </thead>
+            <tbody id="report-table">
+                <!-- Your table data goes here as you had it -->
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Function to update the table based on selected date range and filter option
+            function updateTableData(startDate, endDate, filterOption) {
+                // Initial table data (all data)
+                var initialTableData = [
+                    { TotalCalls: 10, ConnectedCalls: 2, MeetingArrange: 5, MeetingDate: "11-08-23" },
+                    { TotalCalls: 100, ConnectedCalls: 1, MeetingArrange: 6, MeetingDate: "21-08-23" },
+                    { TotalCalls: 20, ConnectedCalls: 1, MeetingArrange: 4, MeetingDate: "14-08-23" },
+                    { TotalCalls: 30, ConnectedCalls: 3, MeetingArrange: 4, MeetingDate: "24-08-23" }
+                ];
+
+                var filteredData = initialTableData.filter(function (row) {
+                    var rowDate = moment(row.MeetingDate, "DD-MM-YY");
+                    return rowDate.isBetween(startDate, endDate, null, '[]');
+                });
+
+                if (filterOption !== "all") {
+                    // Apply additional filtering logic based on the selected filter option
+                    // Modify the filteredData array as needed
+                    // Example: filteredData = filteredData.filter(...)
+                }
+
+                // Update the table with the filtered data
+                var table = $("#report-table");
+                table.find("tbody").empty();
+                $.each(filteredData, function (index, row) {
+                    var newRow = $("<tr>");
+                    newRow.append("<td>" + row.TotalCalls + "</td>");
+                    newRow.append("<td>" + row.ConnectedCalls + "</td>");
+                    newRow.append("<td>" + row.MeetingArrange + "</td>");
+                    newRow.append("<td>" + row.MeetingDate + "</td>");
+                    table.append(newRow);
+                });
+            }
+
+            // Initialize date range picker
+            var start = moment().subtract(29, 'days');
+            var end = moment();
+
+            function cb(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                updateTableData(start.format('DD-MM-YY'), end.format('DD-MM-YY'), $('#filter-option').val());
+            }
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, cb);
+
+            cb(start, end);
+
+            // Event listener for filter option change
+            $('#filter-option').change(function () {
+                updateTableData(start.format('DD-MM-YY'), end.format('DD-MM-YY'), $(this).val());
+            });
+        });
+    </script>
+</body>
+
+</html>
